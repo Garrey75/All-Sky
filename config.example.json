@@ -1,0 +1,15 @@
+{
+  "station_name": "Garrey All-Sky",
+  "operator": "Garrey",
+  "latitude": 40.0,
+  "longitude": -105.0,
+  "elevation_m": 1650,
+  "capture_interval_seconds": 20,
+  "image_size": 720,
+  "data_dir": "data",
+  "demo_mode": true,
+  "demo_frames": 36,
+  "night_threshold_deg": -6,
+  "host": "0.0.0.0",
+  "port": 8080
+}

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Garrey All-Sky</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="sky-dust" aria-hidden="true"></div>
+    <header class="mast">
+      <div>
+        <p class="kicker" id="operator">Station</p>
+        <h1 id="station">Garrey All-Sky</h1>
+      </div>
+      <div class="clock">
+        <span id="utc">—</span>
+        <span class="label">UTC</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="stage">
+        <figure class="fisheye">
+          <img id="latest" alt="Latest all-sky frame" />
+          <figcaption id="latest-caption">waiting for first frame</figcaption>
+        </figure>
+        <aside class="metrics" id="metrics"></aside>
+      </section>
+
+      <section class="toolbar">
+        <label>
+          Night
+          <select id="day"></select>
+        </label>
+        <button type="button" id="capture">Capture now</button>
+        <button type="button" id="rebuild" class="ghost">Rebuild products</button>
+      </section>
+
+      <section class="products">
+        <article>
+          <h2>Keogram</h2>
+          <p>Time runs left to right. Zenith is the middle of the strip.</p>
+          <img id="keogram" alt="Keogram for the selected night" />
+        </article>
+        <article>
+          <h2>Star trails</h2>
+          <p>Brightest-pixel stack of the same night.</p>
+          <img id="startrails" alt="Star trails for the selected night" />
+        </article>
+      </section>
+
+      <section>
+        <h2>Archive</h2>
+        <div class="strip" id="archive"></div>
+      </section>
+    </main>
+
+    <footer>
+      <p>Garrey All-Sky · zenith-centered 180° station software · demo simulator until a camera inbox is used</p>
+    </footer>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
