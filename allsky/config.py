@@ -15,7 +15,7 @@ class StationConfig(BaseModel):
     longitude: float = -105.0
     elevation_m: float = 1650.0
     capture_interval_seconds: int = Field(default=20, ge=1)
-    image_size: int = Field(default=720, ge=240, le=2048)
+    image_size: int = Field(default=720, ge=64, le=2048)
     data_dir: str = "data"
     demo_mode: bool = True
     demo_frames: int = Field(default=36, ge=3, le=288)
