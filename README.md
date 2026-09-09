@@ -56,6 +56,14 @@ sudo bash deploy/orangepi/install.sh
 
 脚本会安装 Python、构建前端、安装 systemd 服务 `allsky`，开机自启，默认监听 **8080**。
 
+已经装好代码、只想把进程拉起来（不需要 root）：
+
+```bash
+bash deploy/orangepi/start.sh
+```
+
+会启动 `allsky-orgpi`（Web 控制端，端口 8080）。若系统里有 `indiserver`，同时启动 INDI 模拟器（7624）。
+
 用 Docker：
 
 ```bash

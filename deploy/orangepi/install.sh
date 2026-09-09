@@ -32,4 +32,8 @@ cp "$SRC/deploy/orangepi/allsky.service" /etc/systemd/system/allsky.service
 sed -i "s|/opt/allsky|$ROOT|g" /etc/systemd/system/allsky.service
 systemctl daemon-reload
 systemctl enable --now allsky
+if command -v indiserver >/dev/null 2>&1; then
+  cp "$SRC/deploy/orangepi/indi.service" /etc/systemd/system/indi.service
+  systemctl enable --now indi
+fi
 echo "All-Sky 已启动：http://$(hostname -I | awk '{print $1}'):8080"
