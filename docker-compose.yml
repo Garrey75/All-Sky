@@ -1,0 +1,10 @@
+services:
+  allsky:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      ALLSKY_INDI_HOST: ${ALLSKY_INDI_HOST:-}
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

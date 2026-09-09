@@ -1,0 +1,15 @@
+[Unit]
+Description=All-Sky OrgPi astrophotography controller
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/allsky/backend
+Environment=ALLSKY_ROOT=/opt/allsky
+Environment=ALLSKY_DATA=/opt/allsky/data
+ExecStart=/opt/allsky/backend/.venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8080
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
