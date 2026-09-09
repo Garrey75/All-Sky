@@ -387,17 +387,21 @@ class Simulator:
     def autofocus(self) -> dict:
         start = self.focuser.position
         samples = []
-        for pos in range(start - 600, start + 601, 150):
+        for pos in range(start - 900, start + 901, 150):
+            pos = max(self.focuser.min_pos, min(self.focuser.max_pos, pos))
             self.focuser.position = pos
             err = abs(pos - self.focuser.best) / 140.0
             hfr = max(0.9, 1.5 + err + abs(self.rng.normal(0, 0.08)))
             samples.append({"position": pos, "hfr": round(hfr, 3)})
-        # quadratic fit
         xs = np.array([s["position"] for s in samples], dtype=float)
         ys = np.array([s["hfr"] for s in samples], dtype=float)
         coef = np.polyfit(xs, ys, 2)
-        best = int(-coef[1] / (2 * coef[0])) if coef[0] > 0 else self.focuser.best
-        self.focuser.position = max(self.focuser.min_pos, min(self.focuser.max_pos, best))
+        if coef[0] > 1e-10:
+            vertex = -coef[1] / (2 * coef[0])
+            best = int(np.clip(vertex, xs.min(), xs.max()))
+        else:
+            best = int(xs[int(np.argmin(ys))])
+        self.focuser.position = int(best)
         self.focus_curve = samples
         self.log(f"自动对焦完成，位置 {self.focuser.position}，HFR {min(ys):.2f}")
         return {"curve": samples, "position": self.focuser.position, "hfr": round(float(min(ys)), 3)}
@@ -446,19 +450,17 @@ class Simulator:
         return {"step": 1, "instruction": "拍摄当前指向并解析，然后赤道仪将向西转动约 60°。"}
 
     def polar_capture(self) -> dict:
-        self.capture(exposure=2.0)
+        if self.polar_step == 0:
+            self.polar_start()
+        if self.polar_step <= 1:
+            self.capture(exposure=0.8)
+            solved = self.solve(sync=False)
+            self.polar_solves.append(solved)
+            self.mount.ra_hours = wrap_ra_hours(self.mount.ra_hours + 4.0)
+            self.polar_step = 2
+        self.capture(exposure=0.8)
         solved = self.solve(sync=False)
         self.polar_solves.append(solved)
-        if self.polar_step == 1:
-            self.polar_step = 2
-            # rotate RA 60 deg
-            self.mount.ra_hours = wrap_ra_hours(self.mount.ra_hours + 4.0)
-            return {
-                "step": 2,
-                "solve": solved,
-                "instruction": "赤道仪已向西转动 60°，请拍摄第二张。",
-            }
-        # second solve
         first, second = self.polar_solves[0], self.polar_solves[-1]
         err = polar_error_from_solves(
             first["ra_hours"],
@@ -467,7 +469,6 @@ class Simulator:
             second["dec_deg"],
             expected_dra_deg=60.0,
         )
-        # blend with ground-truth simulated pole error so the UI is meaningful
         err["az_arcsec"] = self.mount.pole_az_err
         err["alt_arcsec"] = self.mount.pole_alt_err
         err["total_arcsec"] = math.hypot(err["az_arcsec"], err["alt_arcsec"])
@@ -611,7 +612,16 @@ class Simulator:
                 "rms": self.guide_rms,
                 "samples": self.guide_samples[-80:],
             },
-            "polar": {"step": self.polar_step, "result": self.polar_result},
+            "polar": {
+                "step": self.polar_step,
+                "result": self.polar_result,
+                "instruction": {
+                    0: "点击开始，然后拍摄两张解析图。",
+                    1: "拍摄第一张，随后赤道仪将自动向西转 60° 并拍第二张。",
+                    2: "正在拍摄第二张…",
+                    3: "校准完成，按箭头微调极轴。",
+                }.get(self.polar_step, ""),
+            },
             "hfr": self.last_hfr,
             "stars": len(self.last_stars),
             "solve": self.last_solve,

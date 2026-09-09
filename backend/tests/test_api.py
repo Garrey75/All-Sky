@@ -58,7 +58,16 @@ def test_goto_and_autorun():
     )
     assert r.status_code == 200
     assert r.json()["running"] is True
-    client.post("/api/autorun/stop")
+    import time
+
+    images = []
+    for _ in range(40):
+        time.sleep(0.15)
+        st = client.get("/api/status").json()
+        if not st["sequencer"]["running"]:
+            images = client.get("/api/images").json()["images"]
+            break
+    assert images, "autorun should write at least one FITS frame"
 
 
 def test_polar_workflow():
@@ -66,10 +75,8 @@ def test_polar_workflow():
     s = client.post("/api/polar/start")
     assert s.json()["step"] == 1
     c1 = client.post("/api/polar/capture")
-    assert c1.json()["step"] == 2
-    c2 = client.post("/api/polar/capture")
-    assert c2.json()["step"] == 3
-    assert "result" in c2.json()
+    assert c1.json()["step"] == 3
+    assert "result" in c1.json()
     adj = client.post("/api/polar/adjust", json={"az": 60, "alt": 40})
     assert adj.status_code == 200
 
@@ -81,4 +88,5 @@ def test_guide_and_focus():
     assert st["guiding"]["running"] is True
     af = client.post("/api/autofocus")
     assert "curve" in af.json()
+    assert 9000 < af.json()["position"] < 18000
     client.post("/api/guide/stop")

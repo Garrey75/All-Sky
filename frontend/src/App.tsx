@@ -270,7 +270,7 @@ export default function App() {
       return (
         <div className="panel">
           <h3>极轴校准</h3>
-          <p className="muted">全天解析法：拍一张 → 赤道仪转 60° → 再拍一张，得到方位/高度误差。</p>
+          <p className="muted">{status?.polar?.instruction || "全天解析法：一次拍摄会自动转 60° 再拍第二张，得到方位/高度误差。"}</p>
           <div className="row">
             <button className="btn" onClick={() => run("开始极轴", api.polarStart)}>开始</button>
             <button className="btn primary" onClick={() => run("极轴拍摄", api.polarCapture)}>拍摄并解析</button>
@@ -346,7 +346,7 @@ export default function App() {
             {(catalog?.objects || catalog?.tonight || []).slice(0, 20).map((o: any) => (
               <button key={o.id} className="item" onClick={() => run(`GoTo ${o.id}`, () => api.goto({ id: o.id }))}>
                 <b>{o.name_zh || o.name}</b>
-                <div className="muted">{o.id} · mag {o.mag} · 高度 {o.alt}°</div>
+                <div className="muted">{o.id} · mag {o.mag} · 高度 {o.alt}° · 前往</div>
               </button>
             ))}
           </div>
@@ -473,7 +473,7 @@ export default function App() {
                   }))}>开始序列</button>
                   <button className="btn danger" onClick={() => api.autorunStop()}>停止</button>
                 </div>
-                <p className="muted">进度 {status?.sequencer?.progress?.done || 0}/{status?.sequencer?.progress?.total || 0}</p>
+                <p className="muted">进度 {status?.sequencer?.progress?.done || 0}/{status?.sequencer?.progress?.total || 0} {status?.sequencer?.running ? "运行中" : ""}</p>
               </div>
             )}
             {tab === "video" && (
@@ -514,14 +514,17 @@ export default function App() {
             {tab === "album" && (
               <div className="panel">
                 <h3>相册</h3>
+                <button className="btn" onClick={loadImages}>刷新</button>
                 <div className="list">
-                  {images.map((im) => (
+                  {(images.length ? images : status?.sequencer?.captured || []).map((im: any) => (
                     <div className="item" key={im.id || im.name}>
                       <b>{im.name}</b>
                       <div className="muted">{im.mtime || im.time} · {im.size_mb ? `${im.size_mb} MB` : ""} {im.hfr ? `HFR ${im.hfr}` : ""}</div>
                     </div>
                   ))}
-                  {!images.length && <p className="muted">还没有 FITS。跑一段自动拍摄后会出现在 data/images。</p>}
+                  {!images.length && !(status?.sequencer?.captured || []).length && (
+                    <p className="muted">还没有 FITS。跑一段自动拍摄后点刷新。</p>
+                  )}
                 </div>
               </div>
             )}

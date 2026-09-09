@@ -22,7 +22,7 @@ def write_fits16(path: Path, image: np.ndarray, header: dict[str, str]) -> None:
     ]
     for key, value in header.items():
         k = key.strip().upper()[:8].ljust(8)
-        val = str(value)
+        val = "".join(ch if ord(ch) < 128 else "?" for ch in str(value))
         if len(val) > 60:
             val = val[:60]
         if val[:1] in "TF" and len(val) == 1:
